@@ -22,8 +22,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          node-version: 16
       - name: Install IBM CLI
         run: |
           curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
