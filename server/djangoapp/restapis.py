@@ -1,28 +1,78 @@
+from operator import add
 import requests
 import json
+import os
 # import related models here
 from requests.auth import HTTPBasicAuth
+from requests.exceptions import HTTPError
+from dotenv import load_dotenv
+
+load_dotenv()
+
+api_user = os.environ['apiUser']
+api_pass = os.environ['apiPass']
+couch_db_key = os.environ['couchDbKey']
+couch_db_url = os.environ['couchDbUrl']
+dealership_url = os.environ['dealershipUrl']
+review_url = os.environ['reviewUrl']
+review_post_url = os.environ['reviewPostUrl']
 
 
-# Create a `get_request` to make HTTP GET requests
-# e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
-#                                     auth=HTTPBasicAuth('apikey', api_key))
+def post_request(url, payload):
+    try:
+        response = requests.post(url, data=json.dumps(payload), headers={'Content-Type': 'application/json'}, auth=HTTPBasicAuth(api_user, api_pass))
+        response.raise_for_status()
+        return response
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+    except Exception as err:
+        print(f'Other error occurred: {err}')
 
 
-# Create a `post_request` to make HTTP POST requests
-# e.g., response = requests.post(url, params=kwargs, json=payload)
+def get_dealers_from_cf():
+    payload = {
+        "IAM_API_KEY": couch_db_key,
+        "COUCH_URL": couch_db_url
+    }
+    response = post_request(dealership_url, payload)
+    jsonResponse = response.json()["response"]["result"]["rows"]
+    result = []
+    for item in jsonResponse:
+        result.append(item["doc"])
+    return result
 
 
-# Create a get_dealers_from_cf method to get dealers from a cloud function
-# def get_dealers_from_cf(url, **kwargs):
-# - Call get_request() with specified arguments
-# - Parse JSON results into a CarDealer object list
+def get_state_dealers_from_cf(state):
+    payload = {
+        "IAM_API_KEY": couch_db_key,
+        "COUCH_URL": couch_db_url,
+        "STATE": state
+    }
+    response = post_request(dealership_url, payload)
+    jsonResponse = response.json()
+    result = jsonResponse["response"]["result"]["docs"]
+    return result
 
 
-# Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
-# def get_dealer_by_id_from_cf(url, dealerId):
-# - Call get_request() with specified arguments
-# - Parse JSON results into a DealerView object list
+def get_dealer_reviews_by_id_from_cf(dealerId):
+    payload = {
+        "IAM_API_KEY": couch_db_key,
+        "COUCH_URL": couch_db_url,
+        "DEALER_ID": dealerId
+    }
+    response = post_request(review_url, payload)
+    jsonResponse = response.json()
+    result = jsonResponse["response"]["result"]["docs"]
+    return result
+
+
+def post_dealer_review_to_cf(review):
+    payload = {
+        "IAM_API_KEY": couch_db_key,
+        "COUCH_URL": couch_db_url,
+        "REVIEW": review
+    }
+    post_request(review_post_url, payload)
 
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
