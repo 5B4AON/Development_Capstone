@@ -27,6 +27,9 @@ urlpatterns = [
     # path for main page
     path(route='', view=views.get_dealerships, name='index'),
 
+    # path for state dealers
+    path(route='state/<str:state>/', view=views.get_state_dealerships, name='state'),
+
     # path for dealer details
     path(route='dealer/<int:dealerId>/', view=views.get_dealer_details, name='dealer'),
 

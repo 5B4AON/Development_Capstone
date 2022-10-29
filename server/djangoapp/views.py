@@ -98,6 +98,17 @@ def get_dealerships(request):
             result = str(e.reason)
         return HttpResponse(result)
 
+# Create a `get_state_dealerships` view to get a list of dealrships for specified state
+def get_state_dealerships(request, state):
+    """ Render page with a list of dealerships for this state """
+    if request.method == "GET":
+        try:
+            dealerships = get_dealers(st=state)
+            result = '<br />'.join([str(dealer).replace(" ", "&nbsp").replace("\n", "<br />\n") for dealer in dealerships])
+        except HTTPError as e:
+            result = str(e.reason)
+        return HttpResponse(result)
+
 # Create a `get_dealer_details` view to render the details of a dealer
 def get_dealer_details(request, dealerId):
     """ Render page with dealer details """
@@ -108,7 +119,6 @@ def get_dealer_details(request, dealerId):
         except HTTPError as e:
             result = str(e.reason)
         return HttpResponse(result)
-
 
 # Create a `get_dealer_reviews` view to render the reviews of a dealer
 def get_dealer_reviews(request, dealerId):
