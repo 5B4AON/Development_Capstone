@@ -64,7 +64,7 @@ def get_dealers(**kwargs):
     except HTTPError:
         # If we already have an HTTPError then do not recast just throw
         raise
-    except:
+    except Exception as ex:
         raise HTTPError(cloudant_dealership_url, 500,
                         "Something went wrong on the server.", None, None)
     if len(result) == 0:
@@ -106,7 +106,7 @@ def get_reviews(**kwargs):
                         "Something went wrong on the server.", None, None)
     if len(result) == 0:
         raise HTTPError(cloudant_review_url, 404,
-                        "Reviews not found.", None, None)
+                        "No reviews yet...", None, None)
     return result
 
 

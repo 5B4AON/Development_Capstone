@@ -117,7 +117,7 @@ class BackendApiTest(TestCase):
         json_val = {"response": {"result": {"docs": []}}}
         mock_post.return_value.json = Mock(return_value=json_val)
         self.assertRaisesMessage(
-            HTTPError, "Reviews not found.", get_reviews, id=0)
+            HTTPError, "No reviews yet...", get_reviews, id=0)
 
     @patch('requests.post')
     def test_post_review_success(self, mock_post):

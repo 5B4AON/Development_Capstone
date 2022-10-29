@@ -7,8 +7,6 @@ class CarModelInline(admin.StackedInline):
     model = CarModel 
     extra = 5
 
-# CarModelAdmin class
-
 # CarMakeAdmin class with CarModelInline
 class CarMakeAdmin(admin.ModelAdmin):
     inlines = [CarModelInline]

@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
-# from .models import related models
+from .models import CarModel, CarMake
 from .restapis import get_dealers, get_reviews, post_review
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
@@ -79,77 +79,59 @@ def registration_request(request):
             return render(request, 'djangoapp/registration.html', context)
 
 
-
-# Update the `get_dealerships` view to render the index page with a list of dealerships
-
-# def get_dealerships(request):
-#     """ Render page with a list of dealerships """
-#     context = {}
-#     if request.method == "GET":
-#         return render(request, 'djangoapp/index.html', context)
-
 def get_dealerships(request):
     """ Render page with a list of dealerships """
+    context = {}
     if request.method == "GET":
         try:
-            dealerships = get_dealers()
-            result = '<br />'.join([str(dealer).replace(" ", "&nbsp").replace("\n", "<br />\n") for dealer in dealerships])
+            context["dealerships"] = get_dealers()
+            return render(request, 'djangoapp/index.html', context)
         except HTTPError as e:
-            result = str(e.reason)
-        return HttpResponse(result)
+            context["message"] = e.reason
+            return render(request, 'djangoapp/index.html', context)
 
-# Create a `get_state_dealerships` view to get a list of dealrships for specified state
-def get_state_dealerships(request, state):
-    """ Render page with a list of dealerships for this state """
-    if request.method == "GET":
-        try:
-            dealerships = get_dealers(st=state)
-            result = '<br />'.join([str(dealer).replace(" ", "&nbsp").replace("\n", "<br />\n") for dealer in dealerships])
-        except HTTPError as e:
-            result = str(e.reason)
-        return HttpResponse(result)
 
-# Create a `get_dealer_details` view to render the details of a dealer
 def get_dealer_details(request, dealerId):
-    """ Render page with dealer details """
-    if request.method == "GET":
-        try:
-            dealerships = get_dealers(id=dealerId)
-            result = '<br />'.join([str(dealer).replace(" ", "&nbsp").replace("\n", "<br />\n") for dealer in dealerships])
-        except HTTPError as e:
-            result = str(e.reason)
-        return HttpResponse(result)
-
-# Create a `get_dealer_reviews` view to render the reviews of a dealer
-def get_dealer_reviews(request, dealerId):
     """ Render page with dealer reviews """
+    context = {}
     if request.method == "GET":
         try:
-            reviews = get_reviews(id=dealerId)
-            result = '<br />'.join([str(review).replace(" ", "&nbsp").replace("\n", "<br />\n") for review in reviews])
+            context["dealer"] = get_dealers(id=dealerId)[0]
+            context["reviews"] = get_reviews(id=dealerId)
+            return render(request, 'djangoapp/dealer_details.html', context)
         except HTTPError as e:
-            result = str(e.reason)
-        return HttpResponse(result)
+            context["message"] = e.reason
+            return render(request, 'djangoapp/dealer_details.html', context)
 
-# Create a `add_review` view to submit a review
-def add_review(request):
+
+def add_review(request, dealerId):
     """ Post a review and then redirect to review page"""
-    if request.method == "GET": # Change to POST after testing
-        if not request.user.is_authenticated:
-            return HttpResponse(status=401)
-        try:
+    if not request.user.is_authenticated:
+        return HttpResponse(status=401)
+    context = {}
+    try:
+        if request.method == "GET":
+            context["cars"] = CarModel.objects.filter(
+                dealer_id=dealerId).select_related("make")
+            context["dealer"] = get_dealers(id=dealerId)[0]
+            return render(request, 'djangoapp/add_review.html', context)
+
+        if request.method == "POST":
+            car = CarModel.objects.get(id=request.POST.get("car"))
+            print(car.make.name, car.name, car.year)
             review = {
-                "car_make": "Audi",
-                "car_model": "Car",
-                "car_year": 2021,
-                "dealership": 1,
-                "id": 0, # irrelevant as Cloudant autogenerates its own _id
-                "name": "My name",
-                "purchase": True,
-                "purchase_date": "02/16/2021",
-                "review": "Great service!"
+                "car_make": car.make.name,
+                "car_model": car.name,
+                "car_year": car.year.strftime("%Y"),
+                "dealership": dealerId,
+                "id": 0,  # irrelevant as Cloudant autogenerates its own _id
+                "name": request.POST.get("name"),
+                "purchase": request.POST.get("purchasecheck") == 'on',
+                "purchase_date": request.POST.get("purchasedate"),
+                "review": request.POST.get("content")
             }
             post_review(review)
-            return redirect("djangoapp:reviews", dealerId=1)
-        except HTTPError as e:
-            return HttpResponse(str(e.reason))
+            return redirect("djangoapp:details", dealerId)
+    except HTTPError as e:
+        context["message"] = e.reason
+        return render(request, 'djangoapp/add_review.html', context)

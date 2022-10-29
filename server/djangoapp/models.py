@@ -9,7 +9,7 @@ class CarMake(models.Model):
     description = models.CharField(null=False, max_length=250)
 
     def __str__(self):
-        return json.dumps(self.__dict__, indent=2)
+        return self.name
 
 
 class CarModel(models.Model):
@@ -36,7 +36,7 @@ class CarModel(models.Model):
     year = models.DateField(null=False)
 
     def __str__(self):
-        return json.dumps(self.__dict__, indent=2)
+        return self.name
 
 
 class CarDealer:
@@ -73,4 +73,3 @@ class DealerReview:
 
     def __str__(self):
         return json.dumps(self.__dict__, indent=2)
-
