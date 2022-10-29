@@ -1,3 +1,4 @@
+import json
 from django.db import models
 from django.utils.timezone import now
 
@@ -8,7 +9,7 @@ class CarMake(models.Model):
     description = models.CharField(null=False, max_length=250)
 
     def __str__(self):
-        return self.name + " " + self.description
+        return json.dumps(self.__dict__, indent=2)
 
 
 class CarModel(models.Model):
@@ -35,10 +36,41 @@ class CarModel(models.Model):
     year = models.DateField(null=False)
 
     def __str__(self):
-        return self.name
+        return json.dumps(self.__dict__, indent=2)
 
 
-# <HINT> Create a plain Python class `CarDealer` to hold dealer data
+class CarDealer:
+
+    def __init__(self, address, city, full_name, id, lat, long, short_name, st, state, zip):
+        self.address = address
+        self.city = city
+        self.full_name = full_name
+        self.id = id
+        self.lat = lat
+        self.long = long
+        self.short_name = short_name
+        self.st = st
+        self.state = state
+        self.zip = zip
+
+    def __str__(self):
+        return json.dumps(self.__dict__, indent=2)
 
 
-# <HINT> Create a plain Python class `DealerReview` to hold review data
+class DealerReview:
+
+    def __init__(self, car_make, car_model, car_year, dealership, id, name, purchase, purchase_date, review, sentiment):
+        self.car_make = car_make
+        self.car_model = car_model
+        self.car_year = car_year
+        self.dealership = dealership
+        self.id = id
+        self.name = name
+        self.purchase = purchase
+        self.purchase_date = purchase_date
+        self.review = review
+        self.sentiment = sentiment
+
+    def __str__(self):
+        return json.dumps(self.__dict__, indent=2)
+
