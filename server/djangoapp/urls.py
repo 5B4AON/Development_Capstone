@@ -33,4 +33,9 @@ urlpatterns = [
     # path for adding a review
     path(route='dealer/<int:dealerId>/review', view=views.add_review, name='review'),
 
+    # paths for api proxy services pointing to Cloud Foundry IAM protected Functions
+    path(route='api/dealership', view=views.get_dealerships_proxy, name='get_dealerships_proxy'),
+    path(route='api/dealership/<str:state>', view=views.get_state_dealerships_proxy, name='get_state_dealerships_proxy'),
+    path(route='api/review/<int:dealerId>', view=views.get_dealer_details_proxy, name='get_dealer_details_proxy'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

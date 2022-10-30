@@ -91,6 +91,30 @@ def get_dealerships(request):
             return render(request, 'djangoapp/index.html', context)
 
 
+def get_dealerships_proxy(request):
+    """ Proxy for Cloud Function public GET request api/dealership """
+    if request.method == "GET":
+        try:
+            dealerships = get_dealers()
+            result = '<br />'.join([str(dealer).replace(" ", "&nbsp").replace(
+                "\n", "<br />\n") for dealer in dealerships])
+        except HTTPError as e:
+            result = str(e.reason)
+        return HttpResponse(result)
+
+
+def get_state_dealerships_proxy(request, state):
+    """ Proxy for Cloud Function public GET request api/dealership/<str:state> """
+    if request.method == "GET":
+        try:
+            dealerships = get_dealers(st=state)
+            result = '<br />'.join([str(dealer).replace(" ", "&nbsp").replace(
+                "\n", "<br />\n") for dealer in dealerships])
+        except HTTPError as e:
+            result = str(e.reason)
+        return HttpResponse(result)
+
+
 def get_dealer_details(request, dealerId):
     """ Render page with dealer reviews """
     context = {}
@@ -102,6 +126,17 @@ def get_dealer_details(request, dealerId):
         except HTTPError as e:
             context["message"] = e.reason
             return render(request, 'djangoapp/dealer_details.html', context)
+
+
+def get_dealer_details_proxy(request, dealerId):
+    """ Proxy for Cloud Function public GET request api/review/<int:dealerId> """
+    if request.method == "GET":
+        try:
+            reviews = get_reviews(id=dealerId)
+            result = '<br />'.join([str(review).replace(" ", "&nbsp").replace("\n", "<br />\n") for review in reviews])
+        except HTTPError as e:
+            result = str(e.reason)
+        return HttpResponse(result)
 
 
 def add_review(request, dealerId):
