@@ -160,7 +160,7 @@ def add_review(request, dealerId):
                 "car_year": car.year.strftime("%Y"),
                 "dealership": dealerId,
                 "id": 0,  # irrelevant as Cloudant autogenerates its own _id
-                "name": request.POST.get("name"),
+                "name": request.user.last_name + " " + request.user.first_name,
                 "purchase": request.POST.get("purchasecheck") == 'on',
                 "purchase_date": request.POST.get("purchasedate"),
                 "review": request.POST.get("content")
